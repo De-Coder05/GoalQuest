@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import { useEffect, useState, useCallback } from 'react';
 
 const QUARTERS = ['Q1', 'Q2', 'Q3', 'Q4'];

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import { PageHeader } from "@/components/AppLayout";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
