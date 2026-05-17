@@ -8,6 +8,12 @@ const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-sans" });
 export const metadata: Metadata = {
   title: "Atomberg Performance — Employee Goal Setting & Tracking Portal",
   description: "In-house goal setting and tracking portal for organizational performance management. Set goals, track progress, and drive results.",
+  icons: {
+    icon: [
+      { url: '/icon.png?v=2', type: 'image/png' },
+      { url: '/favicon.ico?v=2', sizes: 'any' }
+    ]
+  }
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
