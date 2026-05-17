@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-// GET /api/analytics - get analytics data
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -16,7 +15,6 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    // Goal status distribution
     const goals = await prisma.goal.findMany({
       include: {
         user: { select: { name: true, department: true } },
@@ -33,19 +31,16 @@ export async function GET() {
       RETURNED: goals.filter(g => g.status === 'RETURNED').length,
     };
 
-    // Thrust area distribution
     const thrustAreas: Record<string, number> = {};
     goals.forEach(g => {
       thrustAreas[g.thrustArea] = (thrustAreas[g.thrustArea] || 0) + 1;
     });
 
-    // UoM distribution
     const uomDistribution: Record<string, number> = {};
     goals.forEach(g => {
       uomDistribution[g.uomType] = (uomDistribution[g.uomType] || 0) + 1;
     });
 
-    // Department-wise completion
     const departments: Record<string, { total: number; locked: number; withAchievements: number }> = {};
     goals.forEach(g => {
       const dept = g.user.department;
@@ -57,7 +52,6 @@ export async function GET() {
       if (g.achievements.length > 0) departments[dept].withAchievements++;
     });
 
-    // Quarter-wise achievement scores
     const quarterScores: Record<string, { total: number; count: number }> = {};
     goals.forEach(g => {
       g.achievements.forEach(a => {
@@ -75,7 +69,6 @@ export async function GET() {
       goalsTracked: data.count,
     }));
 
-    // Check-in completion rates by manager
     const managers = await prisma.user.findMany({
       where: { role: 'MANAGER' },
       include: {
@@ -106,7 +99,6 @@ export async function GET() {
       };
     });
 
-    // Total users
     const totalUsers = await prisma.user.count();
     const totalGoals = goals.length;
     const lockedGoals = goals.filter(g => g.status === 'LOCKED').length;

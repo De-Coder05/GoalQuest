@@ -25,7 +25,6 @@ function computeScore(uomType: string, target: string, actual: string): number {
       const deadline = new Date(target);
       const completion = new Date(actual);
       if (completion <= deadline) return 100;
-      // Deduct points for lateness (10% per week late)
       const daysLate = Math.ceil((completion.getTime() - deadline.getTime()) / (1000 * 60 * 60 * 24));
       return Math.max(0, 100 - Math.ceil(daysLate / 7) * 10);
     }
@@ -38,7 +37,6 @@ function computeScore(uomType: string, target: string, actual: string): number {
   }
 }
 
-// POST /api/achievements - log or update achievement
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -54,7 +52,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Verify goal exists and belongs to user
     const goal = await prisma.goal.findUnique({ where: { id: goalId } });
     if (!goal) {
       return NextResponse.json({ error: 'Goal not found' }, { status: 404 });
@@ -68,7 +65,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Can only log achievements for locked goals' }, { status: 400 });
     }
 
-    // Compute score
     const score = computeScore(goal.uomType, goal.target, actualAchievement);
 
     const achievement = await prisma.achievement.upsert({
@@ -87,7 +83,6 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // If this is a shared goal (primary owner), sync to copies
     if (!goal.sharedFromId) {
       const copies = await prisma.goal.findMany({
         where: { sharedFromId: goalId },
@@ -110,7 +105,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Audit log
     await prisma.auditLog.create({
       data: {
         goalId,

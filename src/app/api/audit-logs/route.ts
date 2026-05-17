@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-// GET /api/audit-logs - get audit trail
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);

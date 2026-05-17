@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-// GET /api/users - get users (for managers/admins)
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -20,7 +19,6 @@ export async function GET(req: NextRequest) {
     if (view === 'team' && user.role === 'MANAGER') {
       where.managerId = user.id;
     } else if (view === 'all' && (user.role === 'ADMIN' || user.role === 'MANAGER')) {
-      // no filter
     } else {
       where.id = user.id;
     }

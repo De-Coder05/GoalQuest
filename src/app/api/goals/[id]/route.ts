@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-// PUT /api/goals/[id] - update a goal
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
@@ -20,12 +19,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Goal not found' }, { status: 404 });
     }
 
-    // Check if goal is locked
     if (goal.status === 'LOCKED' && user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Goal is locked. Only Admin can modify.' }, { status: 403 });
     }
 
-    // If shared goal, only allow weightage changes by recipient
     if (goal.isShared && goal.userId === user.id && goal.sharedFromId) {
       const allowedFields = ['weightage'];
       const updateKeys = Object.keys(body);
@@ -38,7 +35,27 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       }
     }
 
-    // Log changes for audit
+    if (body.weightage !== undefined) {
+      if (body.weightage < 10) {
+        return NextResponse.json({ error: 'Minimum weightage per goal is 10%' }, { status: 400 });
+      }
+
+      const allGoals = await prisma.goal.findMany({
+        where: { userId: goal.userId, cycleId: goal.cycleId },
+        select: { id: true, weightage: true }
+      });
+      
+      const currentTotal = allGoals.reduce((sum, g) => sum + (g.id === id ? 0 : g.weightage), 0);
+      const newTotal = currentTotal + body.weightage;
+      
+      if (newTotal > 100) {
+        return NextResponse.json(
+          { error: `Total weightage would exceed 100% (current total with this update: ${newTotal}%)` },
+          { status: 400 }
+        );
+      }
+    }
+
     const changes: { field: string; oldValue: string; newValue: string }[] = [];
     for (const [key, value] of Object.entries(body)) {
       if ((goal as any)[key] !== undefined && String((goal as any)[key]) !== String(value)) {
@@ -61,7 +78,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       },
     });
 
-    // Create audit logs
     for (const change of changes) {
       await prisma.auditLog.create({
         data: {
@@ -82,7 +98,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 }
 
-// DELETE /api/goals/[id] - delete a goal
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
@@ -106,7 +121,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    // Delete related records first
     await prisma.achievement.deleteMany({ where: { goalId: id } });
     await prisma.checkIn.deleteMany({ where: { goalId: id } });
     await prisma.auditLog.deleteMany({ where: { goalId: id } });

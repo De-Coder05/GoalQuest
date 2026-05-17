@@ -193,7 +193,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (u) {
         setState(s => ({ ...s, currentUser: u }));
       } else {
-        // Create an ad-hoc user for the store if not found in mock data
         setState(s => ({
           ...s,
           currentUser: {
@@ -206,7 +205,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }));
       }
 
-      // Fetch all relevant goals from the database
       fetch('/api/goals?view=all')
         .then(res => res.json())
         .then(data => {

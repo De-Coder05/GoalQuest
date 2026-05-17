@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-// GET /api/cycles - get goal cycles
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -22,7 +21,6 @@ export async function GET() {
   }
 }
 
-// POST /api/cycles - create a new cycle (admin only)
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);

@@ -54,7 +54,6 @@ function EmployeeCheckin() {
           throw new Error(errData.error || "Failed to submit check-in");
         }
         
-        // Update local store
         addCheckin(g.id, { quarter, actual: d.actual, status: d.status, score: calcScore(g.uom, g.target, d.actual), submittedAt: new Date().toISOString() });
         addAudit({ user: currentUser!.email, action: `${quarter} check-in`, goalId: g.id, details: `Actual: ${d.actual}` });
       }

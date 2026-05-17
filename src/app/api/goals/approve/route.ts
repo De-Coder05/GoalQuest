@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-// POST /api/goals/approve - manager approves goals
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -25,19 +24,16 @@ export async function POST(req: NextRequest) {
 
     const newStatus = action === 'approve' ? 'LOCKED' : 'RETURNED';
 
-    // Update goals
     await prisma.goal.updateMany({
       where: { id: { in: goalIds }, status: 'SUBMITTED' },
       data: { status: newStatus },
     });
 
-    // Get goals for notifications
     const goals = await prisma.goal.findMany({
       where: { id: { in: goalIds } },
       include: { user: true },
     });
 
-    // Create audit logs and notifications
     const employeeIds = new Set<string>();
     for (const goal of goals) {
       employeeIds.add(goal.userId);
@@ -53,7 +49,6 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Notify employees
     for (const empId of employeeIds) {
       const emp = goals.find(g => g.userId === empId)?.user;
       await prisma.notification.create({

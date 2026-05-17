@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-// POST /api/goals/share - share a goal to multiple employees
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -18,17 +17,13 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const { goalData, employeeIds } = body;
-    // goalData: { thrustArea, title, description, uomType, target, cycleId }
-    // employeeIds: string[]
 
     if (!goalData || !employeeIds || employeeIds.length === 0) {
       return NextResponse.json({ error: 'Missing goal data or employee IDs' }, { status: 400 });
     }
 
-    // Create a "source" marker goal or use the data directly
     const createdGoals = [];
     for (const empId of employeeIds) {
-      // Check max goals for this employee
       const existingGoals = await prisma.goal.count({
         where: { userId: empId, cycleId: goalData.cycleId },
       });
@@ -54,7 +49,6 @@ export async function POST(req: NextRequest) {
 
       createdGoals.push(goal);
 
-      // Notify employee
       await prisma.notification.create({
         data: {
           userId: empId,

@@ -80,7 +80,6 @@ export default function DashboardPage() {
     );
   }
 
-  // --- EMPLOYEE DASHBOARD ---
   if (user.role === 'EMPLOYEE') {
     const totalWeight = goals.reduce((s, g) => s + g.weightage, 0);
     return (
@@ -146,7 +145,6 @@ export default function DashboardPage() {
     );
   }
 
-  // --- MANAGER DASHBOARD ---
   if (user.role === 'MANAGER') {
     return (
       <div className="animate-in fade-in duration-500">
@@ -208,7 +206,6 @@ export default function DashboardPage() {
     );
   }
 
-  // --- ADMIN DASHBOARD ---
   return (
     <div className="animate-in fade-in duration-500">
       <PageHeader title="System Dashboard" description="Organization-wide analytics and governance overview." 

@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-// GET /api/escalations - get escalations
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -30,7 +29,6 @@ export async function GET() {
   }
 }
 
-// POST /api/escalations - resolve escalation
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -54,7 +52,6 @@ export async function POST(req: Request) {
     }
 
     if (action === 'trigger_mock') {
-      // Bonus: Manually trigger a mock escalation for demo purposes
       const emp = await prisma.user.findFirst({ where: { role: 'EMPLOYEE' } });
       if (emp) {
         await prisma.escalation.create({

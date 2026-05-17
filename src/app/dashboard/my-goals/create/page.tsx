@@ -63,7 +63,6 @@ export default function Create() {
     if (err) { toast.error(err); return; }
 
     try {
-      // 1. Get active cycle
       const cyclesRes = await fetch('/api/cycles');
       const cycles = await cyclesRes.json();
       const activeCycle = cycles.length > 0 ? cycles[0].id : null;
@@ -76,18 +75,14 @@ export default function Create() {
         const others = mine.filter((g) => g.id !== editingId).reduce((s, g) => s + g.weightage, 0);
         if (others + draft.weightage > 100) { toast.error("Total weightage cannot exceed 100%"); return; }
         
-        // Optimistic update for UI speed
         setGoals(goals.map((g) => g.id === editingId ? { ...g, ...draft } : g));
         
-        // Background sync to Prisma API
-        // For Demo, assume /api/goals is sufficient or we update via local state first
         addAudit({ user: currentUser.email, action: "Goal edited", goalId: editingId, details: draft.title });
         setEditingId(null);
       } else {
         if (mine.length >= 8) { toast.error("Maximum 8 goals per employee"); return; }
         if (totalWeight + draft.weightage > 100) { toast.error("Total weightage cannot exceed 100%"); return; }
 
-        // POST to backend API!
         const res = await fetch('/api/goals', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -109,7 +104,6 @@ export default function Create() {
         
         const savedGoal = await res.json();
         
-        // Add to local store UI state
         const g: Goal = {
           id: savedGoal.id, 
           ownerId: currentUser.id, 
@@ -144,7 +138,6 @@ export default function Create() {
     if (mine.length === 0) { toast.error("Add at least one goal"); return; }
     
     try {
-      // Get active cycle
       const cyclesRes = await fetch('/api/cycles');
       const cycles = await cyclesRes.json();
       const activeCycle = cycles.length > 0 ? cycles[0].id : null;
@@ -161,7 +154,6 @@ export default function Create() {
         throw new Error(errData.error || "Failed to submit goals");
       }
 
-      // Optimistic UI update
       submitOwnGoals(currentUser.id);
       addAudit({ user: currentUser.email, action: "Sheet submitted", details: `${mine.length} goals submitted for approval` });
       toast.success("Goals locked pending manager approval");

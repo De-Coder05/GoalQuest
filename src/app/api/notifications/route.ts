@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-// GET /api/notifications - get user notifications
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -26,7 +25,6 @@ export async function GET() {
   }
 }
 
-// PUT /api/notifications - mark as read
 export async function PUT(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -44,7 +42,6 @@ export async function PUT(req: NextRequest) {
         data: { read: true },
       });
     } else {
-      // Mark all as read
       await prisma.notification.updateMany({
         where: { userId: user.id },
         data: { read: true },

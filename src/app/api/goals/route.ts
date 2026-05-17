@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-// GET /api/goals - get goals for current user or team
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -32,7 +31,6 @@ export async function GET(req: NextRequest) {
       });
       where.userId = { in: teamMembers.map((m: any) => m.id) };
     } else if (view === 'all' && user.role === 'ADMIN') {
-      // no filter
     } else {
       where.userId = user.id;
     }
@@ -57,7 +55,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/goals - create a new goal
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -69,7 +66,6 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { thrustArea, title, description, uomType, target, weightage, cycleId } = body;
 
-    // Validation
     if (!thrustArea || !title || !uomType || !target || weightage === undefined || !cycleId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
@@ -78,7 +74,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Minimum weightage per goal is 10%' }, { status: 400 });
     }
 
-    // Check max goals
     const existingGoals = await prisma.goal.count({
       where: { userId: user.id, cycleId },
     });
@@ -87,7 +82,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Maximum 8 goals allowed per cycle' }, { status: 400 });
     }
 
-    // Check total weightage
     const existingWeightage = await prisma.goal.aggregate({
       where: { userId: user.id, cycleId },
       _sum: { weightage: true },
@@ -120,7 +114,6 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Audit log
     await prisma.auditLog.create({
       data: {
         goalId: goal.id,
