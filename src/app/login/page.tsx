@@ -161,6 +161,28 @@ export default function Login() {
                   <span className="inline-flex items-center gap-2">Sign in to portal <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></span>
                 )}
               </Button>
+              
+              <div className="relative flex items-center py-2">
+                <div className="flex-grow border-t border-border"></div>
+                <span className="flex-shrink-0 mx-4 text-xs font-semibold uppercase text-muted-foreground">Or</span>
+                <div className="flex-grow border-t border-border"></div>
+              </div>
+
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="lg" 
+                className="w-full h-11 text-sm font-semibold transition-all hover:bg-slate-50"
+                onClick={() => signIn("azure-ad")}
+              >
+                <svg className="w-5 h-5 mr-2" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
+                  <path fill="#f25022" d="M1 1h9v9H1z"/>
+                  <path fill="#00a4ef" d="M1 11h9v9H1z"/>
+                  <path fill="#7fba00" d="M11 1h9v9h-9z"/>
+                  <path fill="#ffb900" d="M11 11h9v9h-9z"/>
+                </svg>
+                Sign in with Microsoft
+              </Button>
             </form>
             
             <div className="mt-8 pt-8 border-t border-border/50 animate-in fade-in duration-700 delay-500 fill-mode-backwards">
