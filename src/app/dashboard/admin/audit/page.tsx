@@ -5,13 +5,34 @@ import { useStore } from "@/lib/store";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 
 
 export default function Audit() {
-  const { audit } = useStore();
+  const [audit, setAudit] = useState<any[]>([]);
   const [q, setQ] = useState("");
+
+  useEffect(() => {
+    fetch('/api/audit-logs')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const mapped = data.map((d: any) => ({
+            id: d.id,
+            ts: d.timestamp,
+            user: d.user?.email || 'Unknown',
+            action: d.action,
+            goalId: d.goalId,
+            details: d.goal ? d.goal.title : d.field,
+            change: d.oldValue ? `${d.oldValue} → ${d.newValue}` : d.newValue,
+          }));
+          setAudit(mapped);
+        }
+      })
+      .catch(err => console.error("Failed to fetch audit logs", err));
+  }, []);
+
   const list = useMemo(() => audit.filter((a) =>
     !q || a.user.includes(q) || a.action.toLowerCase().includes(q.toLowerCase()) || (a.goalId ?? "").includes(q) || a.details.toLowerCase().includes(q.toLowerCase())
   ), [audit, q]);
