@@ -198,9 +198,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           ...s,
           currentUser: {
             id: 'u-custom',
-            name: session.user.name || 'User',
-            email: session.user.email || '',
-            role: (session.user as any).role?.toLowerCase() || 'employee',
+            name: session.user?.name || 'User',
+            email: session.user?.email || '',
+            role: ((session.user as any)?.role?.toLowerCase() as Role) || 'employee',
             department: 'Custom'
           }
         }));
