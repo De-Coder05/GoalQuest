@@ -222,7 +222,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
               weightage: p.weightage,
               status: (p.status === 'LOCKED' ? 'approved' : p.status === 'SUBMITTED' ? 'awaiting' : p.status === 'RETURNED' ? 'returned' : 'draft') as GoalStatus,
               shared: p.isShared,
-              checkins: p.checkIns || [], 
+              checkins: (p.achievements || []).map((a: any) => {
+                const managerCi = (p.checkIns || []).find((ci: any) => ci.quarter === a.quarter);
+                return {
+                  quarter: a.quarter,
+                  actual: a.actualAchievement,
+                  status: a.progressStatus === 'NOT_STARTED' ? 'Not Started' : a.progressStatus === 'COMPLETED' ? 'Completed' : 'On Track',
+                  score: a.score / 100,
+                  managerComment: managerCi?.comment,
+                  reviewed: !!managerCi,
+                  submittedAt: a.createdAt,
+                };
+              }),
               createdAt: p.createdAt,
               managerComment: '',
             }));

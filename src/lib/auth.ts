@@ -1,10 +1,16 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import AzureADProvider from 'next-auth/providers/azure-ad';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 
 export const authOptions: NextAuthOptions = {
   providers: [
+    AzureADProvider({
+      clientId: process.env.AZURE_AD_CLIENT_ID || '',
+      clientSecret: process.env.AZURE_AD_CLIENT_SECRET || '',
+      tenantId: process.env.AZURE_AD_TENANT_ID || '',
+    }),
     CredentialsProvider({
       name: 'Credentials',
       credentials: {

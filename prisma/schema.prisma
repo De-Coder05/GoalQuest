@@ -25,6 +25,7 @@ model User {
   checkIns      CheckIn[]
   auditLogs     AuditLog[]
   notifications Notification[]
+  escalations   Escalation[]
 }
 
 model GoalCycle {
@@ -121,4 +122,13 @@ model EscalationRule {
   daysThreshold  Int
   notifyRole     String
   isActive       Boolean @default(true)
+}
+
+model Escalation {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   User     @relation(fields: [employeeId], references: [id])
+  rule       String
+  status     String   @default("Pending")
+  createdAt  DateTime @default(now())
 }
