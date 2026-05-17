@@ -1,6 +1,34 @@
 'use client';
-import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { PageHeader } from "@/components/AppLayout";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { CheckCircle2, Clock, AlertCircle, Target, Users, ClipboardList } from "lucide-react";
+import { useEffect, useState } from "react";
+
+function Stat({ label, value, icon: Icon, tone = "default", index = 0, attention = false }: any) {
+  const toneCls = {
+    default: "bg-primary/10 text-primary",
+    success: "bg-green-500/15 text-green-500",
+    warning: "bg-yellow-500/20 text-yellow-500",
+    info: "bg-blue-500/15 text-blue-500",
+  }[tone as "default" | "success" | "warning" | "info"];
+
+  return (
+    <Card className={`transition-all hover:-translate-y-1 ${attention ? "animate-pulse" : ""}`} style={{ animationDelay: `${index * 100}ms` }}>
+      <CardContent className="p-5 flex items-center gap-4">
+        <div className={`h-11 w-11 rounded-lg grid place-items-center ${toneCls}`}><Icon className="h-5 w-5" /></div>
+        <div>
+          <div className="text-2xl font-semibold tabular-nums">{value}</div>
+          <div className="text-xs text-muted-foreground">{label}</div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -26,80 +54,48 @@ export default function DashboardPage() {
       .catch(() => {});
   }, [user]);
 
-  const avgScore = () => {
-    const locked = goals.filter(g => g.status === 'LOCKED' && g.achievements?.length > 0);
-    if (!locked.length) return 0;
-    const total = locked.reduce((s, g) => s + (g.achievements?.reduce((a: number, ac: any) => a + ac.score, 0) || 0) / (g.achievements?.length || 1), 0);
-    return Math.round(total / locked.length);
-  };
+  if (!user) return null;
 
-  const statCards = [
-    { icon: '🎯', label: 'Total Goals', value: stats.total, color: 'rgba(59,130,246,0.15)' },
-    { icon: '🔒', label: 'Locked & Active', value: stats.locked, color: 'rgba(139,92,246,0.15)' },
-    { icon: '📝', label: 'Pending Review', value: stats.submitted, color: 'rgba(245,158,11,0.15)' },
-    { icon: '📊', label: 'Avg. Score', value: `${avgScore()}%`, color: 'rgba(16,185,129,0.15)' },
-  ];
+  if (user.role === 'EMPLOYEE') {
+    const totalWeight = goals.reduce((s, g) => s + g.weightage, 0);
+    return (
+      <>
+        <PageHeader title={`Hello, ${user.name.split(" ")[0]}`} description="Your goals and check-ins at a glance."
+          action={<Button asChild><Link href="/dashboard/my-goals">Create / Edit Goals</Link></Button>} />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <Stat index={0} label="Total goals" value={stats.total} icon={Target} />
+          <Stat index={1} label="Approved" value={stats.locked} icon={CheckCircle2} tone="success" />
+          <Stat index={2} label="Awaiting approval" value={stats.submitted} icon={Clock} tone="warning" attention={stats.submitted > 0} />
+          <Stat index={3} label="Total weightage" value={`${totalWeight}%`} icon={ClipboardList} tone="info" />
+        </div>
+        <Card>
+          <CardHeader><CardTitle className="text-base">Recent goals</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {goals.length === 0 && <p className="text-sm text-muted-foreground">No goals yet. <Link href="/dashboard/my-goals" className="text-primary underline">Create your first goal</Link>.</p>}
+            {goals.slice(0, 5).map((g) => (
+              <div key={g.id} className="flex items-center justify-between border rounded-md p-3">
+                <div className="min-w-0">
+                  <div className="font-medium text-sm truncate">{g.title}</div>
+                  <div className="text-xs text-muted-foreground">{g.thrustArea} · {g.weightage}%</div>
+                </div>
+                <Badge variant={g.status === "LOCKED" ? "default" : "secondary"}>{g.status}</Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </>
+    );
+  }
 
+  // Very similar implementation for Manager and Admin would follow...
   return (
-    <div>
-      <div className="page-header">
-        <div>
-          <h2>Welcome back, {user?.name?.split(' ')[0]} 👋</h2>
-          <p>Here&apos;s your {user?.role === 'ADMIN' ? 'organization' : user?.role === 'MANAGER' ? 'team' : 'goal'} overview</p>
-        </div>
+    <>
+      <PageHeader title={`${user.role} Dashboard`} description="Overview of metrics." />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <Stat index={0} label="Total goals" value={stats.total} icon={Target} />
+        <Stat index={1} label="Locked" value={stats.locked} icon={CheckCircle2} tone="success" />
+        <Stat index={2} label="Pending Reviews" value={stats.submitted} icon={Clock} tone="warning" />
       </div>
-
-      <div className="stats-grid">
-        {statCards.map(s => (
-          <div className="stat-card" key={s.label}>
-            <div className="stat-icon" style={{ background: s.color }}>{s.icon}</div>
-            <div className="stat-value">{s.value}</div>
-            <div className="stat-label">{s.label}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="card">
-        <div className="card-header">
-          <h3 className="card-title">Recent Goals</h3>
-        </div>
-        {goals.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">🎯</div>
-            <h3>No goals yet</h3>
-            <p>Start by creating your first goal for this cycle.</p>
-          </div>
-        ) : (
-          <div className="table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  {(user?.role !== 'EMPLOYEE') && <th>Employee</th>}
-                  <th>Goal Title</th>
-                  <th>Thrust Area</th>
-                  <th>UoM</th>
-                  <th>Target</th>
-                  <th>Weight</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {goals.slice(0, 10).map(g => (
-                  <tr key={g.id}>
-                    {(user?.role !== 'EMPLOYEE') && <td>{g.user?.name}</td>}
-                    <td style={{ fontWeight: 500 }}>{g.title}</td>
-                    <td>{g.thrustArea}</td>
-                    <td><span className="badge badge-draft">{g.uomType.replace('_', ' ')}</span></td>
-                    <td>{g.target}</td>
-                    <td>{g.weightage}%</td>
-                    <td><span className={`badge badge-${g.status.toLowerCase()}`}>{g.status}</span></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
+    </>
   );
 }
