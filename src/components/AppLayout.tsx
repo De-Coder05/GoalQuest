@@ -76,12 +76,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen w-full bg-muted/30">
       <aside className="hidden md:flex w-64 flex-col border-r bg-card">
         <div className="px-5 py-5 border-b">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary grid place-items-center text-primary-foreground font-bold">G</div>
-            <div>
-              <div className="font-semibold tracking-tight">Atomberg Performance</div>
-              <div className="text-[11px] text-muted-foreground -mt-0.5">Atomberg</div>
-            </div>
+          <Link href="/dashboard" className="flex items-center">
+            <img src="/atomberg-logo.svg" alt="Atomberg Logo" className="h-8 dark:hidden" />
+            <img src="/atomberg-logo-white.webp" alt="Atomberg Logo" className="h-8 hidden dark:block" />
           </Link>
         </div>
         <nav className="flex-1 p-3 space-y-1">
@@ -120,7 +117,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-14 border-b bg-card/80 backdrop-blur sticky top-0 z-20 flex items-center justify-between px-4 md:px-8">
           <div className="flex items-center gap-3">
-            <span className="md:hidden font-semibold">Atomberg Performance</span>
+            <img src="/atomberg-logo.svg" alt="Atomberg" className="h-6 md:hidden dark:hidden" />
+            <img src="/atomberg-logo-white.webp" alt="Atomberg" className="h-6 hidden dark:md:hidden dark:block" />
             <Badge variant="secondary" className="font-normal">{ROLE_LABEL[role]}</Badge>
           </div>
           <div className="flex items-center gap-2">

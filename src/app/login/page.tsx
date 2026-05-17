@@ -81,11 +81,8 @@ export default function Login() {
         </div>
         
         <div className="z-10 flex flex-col h-full justify-between">
-          <div className="flex items-center gap-3 animate-in slide-in-from-top-8 fade-in duration-700">
-            <div className="w-12 h-12 rounded-xl bg-black text-primary grid place-items-center shadow-2xl">
-              <Target className="h-7 w-7" />
-            </div>
-            <span className="font-bold text-2xl tracking-tight">Atomberg Performance</span>
+          <div className="flex items-center animate-in slide-in-from-top-8 fade-in duration-700">
+            <img src="/atomberg-logo.svg" alt="Atomberg Logo" className="h-10" />
           </div>
           
           <div className="space-y-6 animate-in slide-in-from-left-12 fade-in duration-1000 delay-300 fill-mode-backwards">
@@ -112,8 +109,9 @@ export default function Login() {
         <Card className={`w-full max-w-[440px] border-border/40 shadow-2xl bg-card/80 backdrop-blur-2xl animate-in zoom-in-95 fade-in duration-700 ${shake ? "gq-shake" : ""}`}>
           <CardContent className="p-8 sm:p-10">
             <div className="text-center space-y-2 mb-8 animate-in slide-in-from-top-4 fade-in duration-700 delay-200 fill-mode-backwards">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary grid place-items-center mx-auto mb-4 lg:hidden">
-                <Target className="h-6 w-6" />
+              <div className="flex justify-center mb-6 lg:hidden">
+                <img src="/atomberg-logo.svg" alt="Atomberg Logo" className="h-8 dark:hidden" />
+                <img src="/atomberg-logo-white.webp" alt="Atomberg Logo" className="h-8 hidden dark:block" />
               </div>
               <h2 className="text-3xl font-bold tracking-tight">Welcome back</h2>
               <p className="text-sm text-muted-foreground">Sign in to your Atomberg Performance account</p>
