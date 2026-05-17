@@ -47,12 +47,32 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
-        token.id = user.id;
-        token.role = (user as any).role;
-        token.department = (user as any).department;
-        token.managerId = (user as any).managerId;
+        if (account?.provider === 'azure-ad') {
+          // If signing in via SSO, fetch their Atomberg role from the database
+          const dbUser = await prisma.user.findUnique({
+            where: { email: user.email! }
+          });
+          
+          if (dbUser) {
+            token.id = dbUser.id;
+            token.role = dbUser.role;
+            token.department = dbUser.department;
+            token.managerId = dbUser.managerId;
+          } else {
+            // Auto-provision or set defaults if they aren't in the database yet
+            token.id = user.id;
+            token.role = 'EMPLOYEE';
+            token.department = 'General';
+          }
+        } else {
+          // Credentials login
+          token.id = user.id;
+          token.role = (user as any).role;
+          token.department = (user as any).department;
+          token.managerId = (user as any).managerId;
+        }
       }
       return token;
     },
