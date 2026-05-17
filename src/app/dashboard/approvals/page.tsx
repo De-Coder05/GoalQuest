@@ -88,19 +88,41 @@ export default function Approvals() {
                   })}
                   <Textarea placeholder="Feedback (required if returning for revision)…" value={comments[m.id] ?? ""} onChange={(ev) => setComments({ ...comments, [m.id]: ev.target.value })} rows={2} />
                   <div className="flex gap-2">
-                    <Button onClick={() => {
+                    <Button onClick={async () => {
                       if (total !== 100) { toast.error("Sheet weightage must total 100%"); return; }
-                      approveGoals(m.id);
-                      addAudit({ user: currentUser!.email, action: "Sheet approved", details: m.name });
-                      burstConfetti();
-                      toast.success(`Approved ${m.name}'s goal sheet`);
+                      try {
+                        const res = await fetch('/api/goals/approve', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ goalIds: gs.map(g => g.id), action: 'approve' })
+                        });
+                        if (!res.ok) throw new Error("Failed to approve goals");
+                        
+                        approveGoals(m.id);
+                        addAudit({ user: currentUser!.email, action: "Sheet approved", details: m.name });
+                        burstConfetti();
+                        toast.success(`Approved ${m.name}'s goal sheet`);
+                      } catch (e: any) {
+                        toast.error(e.message || "An error occurred");
+                      }
                     }}>Approve all</Button>
-                    <Button variant="outline" className="border-warning text-warning hover:bg-warning/10" onClick={() => {
+                    <Button variant="outline" className="border-warning text-warning hover:bg-warning/10" onClick={async () => {
                       const c = comments[m.id]?.trim();
                       if (!c) { toast.error("Please add feedback before returning"); return; }
-                      returnGoals(m.id, c);
-                      addAudit({ user: currentUser!.email, action: "Sheet returned", details: `${m.name}: ${c}` });
-                      toast.success("Returned for revision");
+                      try {
+                        const res = await fetch('/api/goals/approve', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ goalIds: gs.map(g => g.id), action: 'return', comment: c })
+                        });
+                        if (!res.ok) throw new Error("Failed to return goals");
+                        
+                        returnGoals(m.id, c);
+                        addAudit({ user: currentUser!.email, action: "Sheet returned", details: `${m.name}: ${c}` });
+                        toast.success("Returned for revision");
+                      } catch (e: any) {
+                        toast.error(e.message || "An error occurred");
+                      }
                     }}>Return for revision</Button>
                   </div>
                 </div>

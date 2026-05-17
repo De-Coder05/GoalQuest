@@ -19,7 +19,7 @@ import { Circle, CircleDot, CheckCircle2 } from "lucide-react";
 
 type Quarter = "Q1" | "Q2" | "Q3" | "Q4";
 
-export default function EmployeeCheckin() {
+function EmployeeCheckin() {
   const { currentUser, goals, addCheckin, cycle, addAudit } = useStore();
   const mine = goals.filter((g) => g.ownerId === currentUser!.id && g.status === "approved");
   const openPhase = cycle.phases.find((p) => p.open && p.key.startsWith("q"));
@@ -33,15 +33,36 @@ export default function EmployeeCheckin() {
     return <Card><CardContent className="p-6 text-sm text-muted-foreground">No approved goals to check in on yet.</CardContent></Card>;
   }
 
-  const submit = () => {
-    mine.forEach((g) => {
-      const d = draft[g.id];
-      if (!d?.actual) return;
-      addCheckin(g.id, { quarter, actual: d.actual, status: d.status, score: calcScore(g.uom, g.target, d.actual), submittedAt: new Date().toISOString() });
-      addAudit({ user: currentUser!.email, action: `${quarter} check-in`, goalId: g.id, details: `Actual: ${d.actual}` });
-    });
-    toast.success("Check-in submitted. Awaiting manager review.");
-    setDraft({});
+  const submit = async () => {
+    try {
+      for (const g of mine) {
+        const d = draft[g.id];
+        if (!d?.actual) continue;
+        
+        const res = await fetch('/api/achievements', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            goalId: g.id,
+            quarter,
+            actualAchievement: String(d.actual),
+            progressStatus: d.status === 'Completed' ? 'COMPLETED' : d.status === 'On Track' ? 'ON_TRACK' : 'NOT_STARTED'
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || "Failed to submit check-in");
+        }
+        
+        // Update local store
+        addCheckin(g.id, { quarter, actual: d.actual, status: d.status, score: calcScore(g.uom, g.target, d.actual), submittedAt: new Date().toISOString() });
+        addAudit({ user: currentUser!.email, action: `${quarter} check-in`, goalId: g.id, details: `Actual: ${d.actual}` });
+      }
+      toast.success("Check-in submitted. Awaiting manager review.");
+      setDraft({});
+    } catch (e: any) {
+      toast.error(e.message || "An error occurred");
+    }
   };
 
   return (
@@ -154,11 +175,25 @@ function ManagerCheckin() {
                     );
                   })}
                   <Textarea placeholder="Add a check-in comment for this member…" value={comments[m.id] ?? ""} onChange={(e) => setComments({ ...comments, [m.id]: e.target.value })} rows={2} />
-                  <Button size="sm" onClick={() => {
-                    const c = comments[m.id] ?? "";
-                    tg.forEach((g) => g.checkins.find((x) => x.quarter === quarter) && reviewCheckin(g.id, quarter, c));
-                    addAudit({ user: currentUser!.email, action: `${quarter} reviewed`, details: `${m.name}` });
-                    toast.success("Check-in marked as reviewed");
+                  <Button size="sm" onClick={async () => {
+                    try {
+                      const c = comments[m.id] ?? "";
+                      for (const g of tg) {
+                        if (g.checkins.find((x) => x.quarter === quarter)) {
+                          const res = await fetch('/api/checkins', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ goalId: g.id, quarter, comment: c })
+                          });
+                          if (!res.ok) throw new Error("Failed to save review");
+                          reviewCheckin(g.id, quarter, c);
+                        }
+                      }
+                      addAudit({ user: currentUser!.email, action: `${quarter} reviewed`, details: `${m.name}` });
+                      toast.success("Check-in marked as reviewed");
+                    } catch (e: any) {
+                      toast.error(e.message || "An error occurred");
+                    }
                   }}>Complete review</Button>
                 </div>
               )}
@@ -170,7 +205,7 @@ function ManagerCheckin() {
   );
 }
 
-function CheckIns() {
+export default function CheckIns() {
   const { currentUser } = useStore();
   if (!currentUser) return null;
   return (
