@@ -169,7 +169,11 @@ interface StoreCtx extends StoreState {
 
 const Ctx = createContext<StoreCtx | null>(null);
 
+import { useSession } from "next-auth/react";
+
 export function StoreProvider({ children }: { children: ReactNode }) {
+  const { data: session } = useSession();
+  
   const [state, setState] = useState<StoreState>(() => {
     const persisted = loadState();
     return {
@@ -181,6 +185,28 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       cycle: persisted.cycle ?? seedCycle,
     };
   });
+
+  useEffect(() => {
+    if (session?.user) {
+      const email = session.user.email?.toLowerCase();
+      const u = state.users.find(x => x.email.toLowerCase() === email);
+      if (u) {
+        setState(s => ({ ...s, currentUser: u }));
+      } else {
+        // Create an ad-hoc user for the store if not found in mock data
+        setState(s => ({
+          ...s,
+          currentUser: {
+            id: 'u-custom',
+            name: session.user.name || 'User',
+            email: session.user.email || '',
+            role: (session.user as any).role?.toLowerCase() || 'employee',
+            department: 'Custom'
+          }
+        }));
+      }
+    }
+  }, [session, state.users]);
 
   useEffect(() => {
     try {
