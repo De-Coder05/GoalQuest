@@ -85,7 +85,7 @@ export default function Login() {
             <div className="w-12 h-12 rounded-xl bg-black text-primary grid place-items-center shadow-2xl">
               <Target className="h-7 w-7" />
             </div>
-            <span className="font-bold text-2xl tracking-tight">AtomQuest</span>
+            <span className="font-bold text-2xl tracking-tight">Atomberg Performance</span>
           </div>
           
           <div className="space-y-6 animate-in slide-in-from-left-12 fade-in duration-1000 delay-300 fill-mode-backwards">
@@ -100,7 +100,7 @@ export default function Login() {
           <div className="flex items-center gap-4 animate-in slide-in-from-bottom-8 fade-in duration-1000 delay-500 fill-mode-backwards">
             <div className="h-px bg-primary-foreground/20 flex-1" />
             <div className="text-sm font-bold tracking-widest uppercase text-primary-foreground/80">
-              Hackathon 1.0 Edition
+              Enterprise Edition
             </div>
             <div className="h-px bg-primary-foreground/20 flex-1" />
           </div>
@@ -116,7 +116,7 @@ export default function Login() {
                 <Target className="h-6 w-6" />
               </div>
               <h2 className="text-3xl font-bold tracking-tight">Welcome back</h2>
-              <p className="text-sm text-muted-foreground">Sign in to your GoalQuest account</p>
+              <p className="text-sm text-muted-foreground">Sign in to your Atomberg Performance account</p>
             </div>
             
             <form onSubmit={submit} className="space-y-5 animate-in slide-in-from-bottom-4 fade-in duration-700 delay-300 fill-mode-backwards">

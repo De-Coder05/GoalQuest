@@ -31,7 +31,7 @@ export default function Reports() {
       const q1 = g.checkins.find((c) => c.quarter === "Q1");
       rows.push([u?.name ?? g.ownerId, g.title, g.thrustArea, g.uom, g.target, g.weightage, q1?.actual ?? "", q1 ? Math.round(calcScore(g.uom, g.target, q1.actual) * 100) + "%" : "", g.status]);
     });
-    downloadCSV(rows, "goalquest-achievements.csv");
+    downloadCSV(rows, "atomberg-achievements.csv");
     toast.success("Report downloaded");
   };
 

@@ -140,7 +140,7 @@ const seedEscalations: Escalation[] = [
   { id: "e-2", date: "2024-07-04", employee: "lisa@atomberg.com", rule: "Q1 Check-in overdue (Day 3)", status: "Resolved" },
 ];
 
-const KEY = "goalquest:v1";
+const KEY = "atomberg-performance:v1";
 
 function loadState(): Partial<StoreState> {
   if (typeof window === "undefined") return {};

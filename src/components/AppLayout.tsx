@@ -79,7 +79,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
           <Link href="/dashboard" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary grid place-items-center text-primary-foreground font-bold">G</div>
             <div>
-              <div className="font-semibold tracking-tight">GoalQuest</div>
+              <div className="font-semibold tracking-tight">Atomberg Performance</div>
               <div className="text-[11px] text-muted-foreground -mt-0.5">Atomberg</div>
             </div>
           </Link>
@@ -120,7 +120,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-14 border-b bg-card/80 backdrop-blur sticky top-0 z-20 flex items-center justify-between px-4 md:px-8">
           <div className="flex items-center gap-3">
-            <span className="md:hidden font-semibold">GoalQuest</span>
+            <span className="md:hidden font-semibold">Atomberg Performance</span>
             <Badge variant="secondary" className="font-normal">{ROLE_LABEL[role]}</Badge>
           </div>
           <div className="flex items-center gap-2">

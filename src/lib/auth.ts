@@ -72,5 +72,5 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
   },
-  secret: process.env.NEXTAUTH_SECRET || 'atomquest-hackathon-secret-key-2026',
+  secret: process.env.NEXTAUTH_SECRET || 'atomberg-performance-secret-key-2026',
 };

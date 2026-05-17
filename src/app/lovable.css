@@ -149,7 +149,7 @@
   }
 }
 
-/* ── GoalQuest micro-interactions ─────────────────────────────── */
+/* ── Atomberg Performance micro-interactions ─────────────────────────────── */
 @keyframes gq-shake {
   0%, 100% { transform: translateX(0); }
   20% { transform: translateX(-6px); }

@@ -73,10 +73,10 @@ export async function POST(req: NextRequest) {
     console.log('\n--- 📧 MOCK EMAIL NOTIFICATION ---');
     console.log(`To: ${userData?.managerId || 'manager'}@atomberg.com`);
     console.log(`Subject: ACTION REQUIRED: Goal Sheet Submitted by ${userData?.name || 'Employee'}`);
-    console.log(`Body: ${userData?.name || 'Employee'} has submitted ${goals.length} goals for the active cycle. Please review and approve in GoalQuest.`);
+    console.log(`Body: ${userData?.name || 'Employee'} has submitted ${goals.length} goals for the active cycle. Please review and approve in the Performance Portal.`);
     console.log('--- 💬 MOCK TEAMS NOTIFICATION (Adaptive Card) ---');
     console.log(`To: Manager Channel`);
-    console.log(`Card: { title: "Goal Submission", user: "${userData?.name || 'Employee'}", link: "https://goalquest/dashboard/approvals" }\n`);
+    console.log(`Card: { title: "Goal Submission", user: "${userData?.name || 'Employee'}", link: "https://performance.atomberg.com/dashboard/approvals" }\n`);
 
     return NextResponse.json({ success: true, count: goals.length });
   } catch (error) {

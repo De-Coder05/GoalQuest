@@ -80,7 +80,7 @@ export default function Create() {
         setGoals(goals.map((g) => g.id === editingId ? { ...g, ...draft } : g));
         
         // Background sync to Prisma API
-        // For Hackathon, assume /api/goals is sufficient or we update via local state first
+        // For Demo, assume /api/goals is sufficient or we update via local state first
         addAudit({ user: currentUser.email, action: "Goal edited", goalId: editingId, details: draft.title });
         setEditingId(null);
       } else {
