@@ -197,7 +197,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         setState(s => ({
           ...s,
           currentUser: {
-            id: 'u-custom',
+            id: (session.user as any).id || 'u-custom',
             name: session.user?.name || 'User',
             email: session.user?.email || '',
             role: ((session.user as any)?.role?.toLowerCase() as Role) || 'employee',
@@ -205,6 +205,31 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           }
         }));
       }
+
+      // Fetch all relevant goals from the database
+      fetch('/api/goals?view=all')
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            const mappedGoals = data.map((p: any) => ({
+              id: p.id,
+              ownerId: p.userId,
+              thrustArea: p.thrustArea,
+              title: p.title,
+              description: p.description,
+              uom: (p.uomType || 'min') as UoM,
+              target: String(p.target),
+              weightage: p.weightage,
+              status: (p.status === 'LOCKED' ? 'approved' : p.status === 'SUBMITTED' ? 'awaiting' : p.status === 'RETURNED' ? 'returned' : 'draft') as GoalStatus,
+              shared: p.isShared,
+              checkins: p.checkIns || [], 
+              createdAt: p.createdAt,
+              managerComment: '',
+            }));
+            setState(s => ({ ...s, goals: mappedGoals }));
+          }
+        })
+        .catch(err => console.error("Failed to fetch goals", err));
     }
   }, [session, state.users]);
 

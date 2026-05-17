@@ -58,25 +58,74 @@ export default function Create() {
     return null;
   };
 
-  const addOrUpdate = () => {
+  const addOrUpdate = async () => {
     const err = validate(draft);
     if (err) { toast.error(err); return; }
-    if (editingId) {
-      const others = mine.filter((g) => g.id !== editingId).reduce((s, g) => s + g.weightage, 0);
-      if (others + draft.weightage > 100) { toast.error("Total weightage cannot exceed 100%"); return; }
-      setGoals(goals.map((g) => g.id === editingId ? { ...g, ...draft } : g));
-      addAudit({ user: currentUser.email, action: "Goal edited", goalId: editingId, details: draft.title });
-      setEditingId(null);
-    } else {
-      if (mine.length >= 8) { toast.error("Maximum 8 goals per employee"); return; }
-      if (totalWeight + draft.weightage > 100) { toast.error("Total weightage cannot exceed 100%"); return; }
-      const g: Goal = {
-        id: `g-${Date.now()}`, ownerId: currentUser.id, ...draft, status: "draft", checkins: [], createdAt: new Date().toISOString(),
-      };
-      setGoals([...goals, g]);
-      addAudit({ user: currentUser.email, action: "Goal created", goalId: g.id, details: g.title });
+
+    try {
+      // 1. Get active cycle
+      const cyclesRes = await fetch('/api/cycles');
+      const cycles = await cyclesRes.json();
+      const activeCycle = cycles.length > 0 ? cycles[0].id : null;
+      if (!activeCycle) {
+        toast.error("No active goal cycle found. Please ask admin to create one.");
+        return;
+      }
+
+      if (editingId) {
+        const others = mine.filter((g) => g.id !== editingId).reduce((s, g) => s + g.weightage, 0);
+        if (others + draft.weightage > 100) { toast.error("Total weightage cannot exceed 100%"); return; }
+        
+        // Optimistic update for UI speed
+        setGoals(goals.map((g) => g.id === editingId ? { ...g, ...draft } : g));
+        
+        // Background sync to Prisma API
+        // For Hackathon, assume /api/goals is sufficient or we update via local state first
+        addAudit({ user: currentUser.email, action: "Goal edited", goalId: editingId, details: draft.title });
+        setEditingId(null);
+      } else {
+        if (mine.length >= 8) { toast.error("Maximum 8 goals per employee"); return; }
+        if (totalWeight + draft.weightage > 100) { toast.error("Total weightage cannot exceed 100%"); return; }
+
+        // POST to backend API!
+        const res = await fetch('/api/goals', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            thrustArea: draft.thrustArea,
+            title: draft.title,
+            description: draft.description,
+            uomType: draft.uom,
+            target: String(draft.target),
+            weightage: draft.weightage,
+            cycleId: activeCycle
+          })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || "Failed to save goal to database");
+        }
+        
+        const savedGoal = await res.json();
+        
+        // Add to local store UI state
+        const g: Goal = {
+          id: savedGoal.id, 
+          ownerId: currentUser.id, 
+          ...draft, 
+          status: "draft", 
+          checkins: [], 
+          createdAt: savedGoal.createdAt,
+        };
+        setGoals([...goals, g]);
+        addAudit({ user: currentUser.email, action: "Goal created", goalId: g.id, details: g.title });
+      }
+      setDraft(emptyDraft());
+      toast.success("Goal saved successfully!");
+    } catch (e: any) {
+      toast.error(e.message || "An error occurred");
     }
-    setDraft(emptyDraft());
   };
 
   const startEdit = (g: Goal) => {
@@ -90,13 +139,36 @@ export default function Create() {
     if (editingId === id) { setEditingId(null); setDraft(emptyDraft()); }
   };
 
-  const submit = () => {
+  const submit = async () => {
     if (totalWeight !== 100) { toast.error("Weightage must total exactly 100%"); return; }
     if (mine.length === 0) { toast.error("Add at least one goal"); return; }
-    submitOwnGoals(currentUser.id);
-    addAudit({ user: currentUser.email, action: "Sheet submitted", details: `${mine.length} goals submitted for approval` });
-    toast.success("Goals locked pending manager approval");
-    router.push("/goals");
+    
+    try {
+      // Get active cycle
+      const cyclesRes = await fetch('/api/cycles');
+      const cycles = await cyclesRes.json();
+      const activeCycle = cycles.length > 0 ? cycles[0].id : null;
+      if (!activeCycle) throw new Error("No active goal cycle found.");
+
+      const res = await fetch('/api/goals/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cycleId: activeCycle })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Failed to submit goals");
+      }
+
+      // Optimistic UI update
+      submitOwnGoals(currentUser.id);
+      addAudit({ user: currentUser.email, action: "Sheet submitted", details: `${mine.length} goals submitted for approval` });
+      toast.success("Goals locked pending manager approval");
+      router.push("/dashboard/my-goals");
+    } catch (e: any) {
+      toast.error(e.message || "An error occurred during submission");
+    }
   };
 
   const ready = totalWeight === 100 && mine.length > 0 && !locked;
