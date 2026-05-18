@@ -1,36 +1,114 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Atomberg Performance Portal
 
-## Getting Started
+An enterprise-grade, high-fidelity Employee Goal Setting & Tracking Web Application engineered to align individual objectives with corporate strategic priorities. Developed strictly in accordance with the Atomberg Business Requirement Document (BRD) and optimized for seamless role-based workflows, rigorous business validation, and compliance.
 
-First, run the development server:
+Live Portal: **[https://goal-quest-sable.vercel.app](https://goal-quest-sable.vercel.app)**
+Repository: **[https://github.com/De-Coder05/GoalQuest](https://github.com/De-Coder05/GoalQuest)**
 
+---
+
+## 🚀 Key Features & BRD Compliance
+
+### 1. Role-Based Access Control (RBAC) & Portals
+- **Employee Journey:** Seamless drafting, updating, and deleting of goals during draft cycles. Submit sheets for review, track quarterly check-ins (Q1-Q4), and log target progress with automated calculations.
+- **Manager Journey:** A comprehensive dashboard to monitor team lists, perform inline goal review/edits, push department-level shared goals, log check-in feedback, and review overall manager effectiveness scores.
+- **Admin / HR Journey:** Advanced administration tools to manage appraisal cycles (Draft, Active, Finished), view aggregate company metrics, inspect complete system-wide audit trails, and trigger automated compliance reports.
+
+### 2. Rigorous Goal Sheet Validation
+- **Constraint Enforcement:** 
+  - Maximum of **8 goals** allowed per employee per cycle.
+  - Minimum of **10% weightage** enforced per individual goal.
+  - Total weightage across all goals in a sheet **must equal 100%** exactly before submission is allowed.
+- **State-Locked Security:** Goals are automatically locked upon manager approval. Locked goals can never be deleted or modified by employees (only Admins retain emergency override access). All CRUD modifications strictly check goal state rules at the database API layer.
+- **Shared KPI Syncing:** Admin or Manager can push a single organizational/departmental KPI to multiple employees. Recipients can adjust weightage only (Title and Target are read-only). Logged achievements by the primary owner automatically sync across all linked sheets.
+
+### 3. Comprehensive Audit Trail & Governance
+- Every state change, goal modification, submission, approval, and achievement check-in is logged in the `AuditLog` table.
+- Each entry captures the exact Timestamp, Action, Modified Field, User, Old Value, and New Value to guarantee full regulatory audit capability.
+
+### 4. Advanced Performance Analytics
+- Automatically calculates and renders:
+  - **Quarter-on-Quarter (QoQ) Achievement Trends** (Line charts)
+  - **Thrust Area Distribution** (Pie/Donut charts demonstrating strategic alignment)
+  - **Manager Engagement & Effectiveness Index** (Bar charts showing check-in completion rates)
+  - **Performance status distributions** (On Track, Off Track, At Risk)
+
+---
+
+## 🏆 Bonus Modules Implemented
+
+### 1. Microsoft Entra ID (Azure AD SSO)
+Integrated NextAuth.js with Azure Active Directory (Entra ID) to allow native enterprise SSO login, automatically mapping directory identities to database roles and departments.
+
+### 2. Mock Microsoft Teams & Email Engine
+Simulated Teams and Email notifications triggered upon sheet submissions, reviews, or cycle changes. Output logs structured in production-ready Adaptive Card formats directly visible in server telemetry.
+
+### 3. Rule-Based SLA Escalation Engine
+Automated cron-ready endpoint that scans the database for SLA breaches (e.g., goals awaiting approval for more than 7 days) and logs formal escalation records for HR intervention.
+
+---
+
+## 🗺️ System Architecture
+
+![Atomberg Performance Portal Architecture](https://goal-quest-sable.vercel.app/architecture-diagram.png)
+
+---
+
+## 🛠️ Tech Stack & Architecture
+
+- **Framework:** Next.js 16 (App Router) + React (TypeScript)
+- **Database ORM:** Prisma ORM
+- **Database Engine:** Neon Serverless PostgreSQL
+- **Authentication:** NextAuth.js (supporting Credentials & Azure AD SSO)
+- **Styling & UI:** Tailwind CSS, shadcn/ui components, Lucide React icons
+- **Data Visualization:** Recharts
+
+---
+
+## ⚙️ Local Development Setup
+
+### 1. Clone & Install Dependencies
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/De-Coder05/GoalQuest.git
+cd GoalQuest
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Environment Configuration
+Create a `.env` file in the root directory:
+```env
+DATABASE_URL="your-postgresql-url"
+NEXTAUTH_SECRET="your-nextauth-secret-key"
+NEXTAUTH_URL="http://localhost:3000"
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# SSO Configuration (Optional for local test login)
+AZURE_AD_CLIENT_ID="your-client-id"
+AZURE_AD_CLIENT_SECRET="your-client-secret"
+AZURE_AD_TENANT_ID="your-tenant-id"
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Run Database Migrations
+```bash
+npx prisma db push
+```
 
-## Learn More
+### 4. Launch the Application
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 👥 Seed Accounts (Local Testing)
+If not using SSO, you can log in using these seed credentials:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Admin / HR** | admin@atomberg.com | password123 |
+| **Manager** | manager@atomberg.com | password123 |
+| **Employee** | employee@atomberg.com | password123 |
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+*Atomberg Performance Portal — Enterprise Objectives, Aligned.*
